@@ -4,24 +4,17 @@ import numpy, cv2
 import subprocess, os
 from shutil import copyfile
 
-DOT_WIDTH = 1
-DOT_HEIGHT = 1
-DOT_HSPACE = 1
-DOT_VSPACE = 1
+DOT_WIDTH, DOT_HEIGHT = 1, 1
+DOT_HSPACE, DOT_VSPACE = 1, 1
 
 BORDER_THICKNESS = 1
-BORDER_HSPACE = 2
-BORDER_VSPACE = 2
+BORDER_HSPACE, BORDER_VSPACE = 2, 2
 
-PAD_WIDTH = 8
-PAD_HEIGHT = 8
+PAD_WIDTH, PAD_HEIGHT = 8, 8
 
-SCALE_IMG = 16
-SCALE_VID = 4
+SCALE_IMG, SCALE_VID = 16, 4
 
-# in number of dots
-GRID_WIDTH = 52
-GRID_HEIGHT = 80
+GRID_WIDTH, GRID_HEIGHT = 52, 80
 
 BATTERY_WIDTH = GRID_WIDTH*DOT_WIDTH + (GRID_WIDTH - 1)*DOT_HSPACE + 2*BORDER_HSPACE + 2*BORDER_THICKNESS
 BATTERY_HEIGHT = GRID_HEIGHT*DOT_HEIGHT + (GRID_HEIGHT - 1)*DOT_VSPACE + 2*BORDER_VSPACE + 2*BORDER_THICKNESS
@@ -29,10 +22,10 @@ BATTERY_HEIGHT = GRID_HEIGHT*DOT_HEIGHT + (GRID_HEIGHT - 1)*DOT_VSPACE + 2*BORDE
 TERMINAL_WIDTH = round(min(1/3 * BATTERY_WIDTH, 1/4 * BATTERY_HEIGHT))
 TERMINAL_HEIGHT = round(min(1/10 * BATTERY_WIDTH, 1/16 * BATTERY_HEIGHT))
 
-CANVAS = (BATTERY_WIDTH, BATTERY_HEIGHT)
+BODY_SIZE = (BATTERY_WIDTH, BATTERY_HEIGHT)
 
-WHITE = 3*(255,)
-GREY = 3*(8,)
+WHITE, GREY, BLACK = 3*(255,), 3*(8,), 3*(0,)
+
 
 
 def get_DOB():
@@ -51,7 +44,7 @@ def calculate_fill(birth):
     return 52*years_alive - days_until_birthday//7 - (days_until_birthday%7 != 0)
 
 def generate_image(fill_count):
-    im = Image.new("RGB", CANVAS)
+    im = Image.new("RGB", BODY_SIZE)
     draw = ImageDraw.Draw(im)
 
     draw.rectangle([0, 0, im.width, BORDER_THICKNESS-1], fill=WHITE)
@@ -85,13 +78,11 @@ def generate_image(fill_count):
 
     return im
 
-def four_digits(num):
-    return (4-len(str(num)))*"0" + str(num)
-
 def generate_video(filename):
     im = generate_image(0)
 
     size = (im.width*SCALE_VID, im.height*SCALE_VID)
+    # TODO use openh264
     fourcc = cv2.VideoWriter_fourcc(*'MP4V')
 
     video = cv2.VideoWriter(filename, fourcc, 52, size)
