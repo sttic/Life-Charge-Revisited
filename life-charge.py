@@ -23,11 +23,11 @@ SCALE_VID = 4
 GRID_WIDTH = 52
 GRID_HEIGHT = 80
 
-BATTERY_WIDTH = GRID_WIDTH*DOT_WIDTH + (GRID_WIDTH*DOT_HSPACE - 1) + BORDER_HSPACE + BORDER_HSPACE + 2*BORDER_THICKNESS
-BATTERY_HEIGHT = GRID_HEIGHT*DOT_HEIGHT + (GRID_HEIGHT*DOT_VSPACE - 1) + BORDER_VSPACE + BORDER_VSPACE + 2*BORDER_THICKNESS
+BATTERY_WIDTH = GRID_WIDTH*DOT_WIDTH + (GRID_WIDTH - 1)*DOT_HSPACE + 2*BORDER_HSPACE + 2*BORDER_THICKNESS
+BATTERY_HEIGHT = GRID_HEIGHT*DOT_HEIGHT + (GRID_HEIGHT - 1)*DOT_VSPACE + 2*BORDER_VSPACE + 2*BORDER_THICKNESS
 
-TERMINAL_WIDTH = round(1/3 * BATTERY_WIDTH)
-TERMINAL_HEIGHT = round(1/4 * TERMINAL_WIDTH)
+TERMINAL_WIDTH = round(min(1/3 * BATTERY_WIDTH, 1/4 * BATTERY_HEIGHT))
+TERMINAL_HEIGHT = round(min(1/10 * BATTERY_WIDTH, 1/16 * BATTERY_HEIGHT))
 
 CANVAS = (BATTERY_WIDTH, BATTERY_HEIGHT)
 
@@ -62,17 +62,22 @@ def generate_image(fill_count):
     px = im.load()
     for y in range(GRID_HEIGHT):
         for x in range(GRID_WIDTH):
+            color = WHITE
             if 52*y + x < fill_count:
-                px[BORDER_THICKNESS + BORDER_HSPACE + (DOT_WIDTH + DOT_HSPACE)*x, BORDER_THICKNESS + BORDER_VSPACE + (DOT_HEIGHT + DOT_VSPACE)*y] = GREY
+                color = GREY
+            pos = (BORDER_THICKNESS + BORDER_HSPACE + (DOT_WIDTH + DOT_HSPACE)*x, BORDER_THICKNESS + BORDER_VSPACE + (DOT_HEIGHT + DOT_VSPACE)*y)
+            if DOT_WIDTH > 1 or DOT_HEIGHT > 1:
+                draw.rectangle(pos + (pos[0] + DOT_WIDTH - 1, pos[1] + DOT_HEIGHT - 1))
             else:
-                px[BORDER_THICKNESS + BORDER_HSPACE + (DOT_WIDTH + DOT_HSPACE)*x, BORDER_THICKNESS + BORDER_VSPACE + (DOT_HEIGHT + DOT_VSPACE)*y] = WHITE
+                # problems with drawing rectangle of size 1 pixel
+                px[pos[0], pos[1]] = color
 
     temp = Image.new("RGB", (im.width, im.height + TERMINAL_HEIGHT))
     temp.paste(im, (0, TERMINAL_HEIGHT))
     im = temp
 
     draw = ImageDraw.Draw(im)
-    draw.rectangle([round((im.width - TERMINAL_WIDTH)/2), 0, im.width - TERMINAL_WIDTH, TERMINAL_HEIGHT], fill=WHITE)
+    draw.rectangle([round((im.width - TERMINAL_WIDTH)/2), 0, round((im.width + TERMINAL_WIDTH)/2), TERMINAL_HEIGHT], fill=WHITE)
 
     temp = Image.new("RGB", (im.width + 2*PAD_WIDTH, im.height + 2*PAD_HEIGHT))
     temp.paste(im, (PAD_WIDTH, PAD_HEIGHT))
