@@ -29,8 +29,8 @@ WHITE, GREY, BLACK = 3*(255,), 3*(8,), 3*(0,)
 
 
 def get_DOB():
-    # year, month, day = int(input("YYYY: ")), int(input("MM: ")), int(input("DD: "))
-    year, month, day = 1999, 3, 26
+    year, month, day = int(input("YYYY: ")), int(input("MM: ")), int(input("DD: "))
+    # year, month, day = 1999, 3, 26
     return datetime.date(year, month, day)
 
 def calculate_fill(birth):
@@ -102,11 +102,24 @@ def compress_video(filename, quality):
     subprocess.call("ffmpeg -i %s -vcodec libx264 -crf %i %s -y" % (copy, quality, filename))
     os.remove(copy)
 
+def generate_frames(filepath, scale):
+    im = generate_image(0)
+
+    im2 = im.resize((i*scale for i in im.size))
+    im2.save(filepath + '/life-charge-{:04d}.png'.format(0), 'PNG')
+
+    px = im.load()
+    for y in range(GRID_HEIGHT):
+        for x in range(GRID_WIDTH):
+            px[BORDER_THICKNESS + BORDER_HSPACE + (DOT_WIDTH + DOT_HSPACE)*x + PAD_WIDTH, BORDER_THICKNESS + BORDER_VSPACE + (DOT_HEIGHT + DOT_VSPACE)*y + PAD_HEIGHT + TERMINAL_HEIGHT] = GREY
+            im2 = im.resize((i*scale for i in im.size))
+            im2.save(filepath + '/life-charge-{:04d}.png'.format(GRID_WIDTH*y + x + 1), 'PNG')
+
 im = generate_image(calculate_fill(get_DOB()))
 im = im.resize((i*SCALE_IMG for i in im.size))
 
 # im.show()
 im.save("life-charge.png", "PNG")
 
-generate_video("life-charge.mp4")
-compress_video("life-charge.mp4", 16)
+# generate_video("life-charge.mp4")
+# compress_video("life-charge.mp4", 16)
